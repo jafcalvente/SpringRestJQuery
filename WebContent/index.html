@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>RESTfull Service</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    </head>
+
+    <body>
+        <div>
+        	<h1>Spring RESTfull Service and JQuery</h1>
+        	<h2>Clicks counter</h2>
+            <p>Number of clicks with GET: <span class="span-get"></span></p>
+            <p>Number of clicks with POST: <span class="span-post"></span></p>
+	        <button class="button-get">GET</button>
+	        <button class="button-post">POST</button>
+		</div>
+		<div>
+        	<h2>Greeting</h2>
+        	<p>
+        		Write your name: <input type="text" id="name" placeholder="Write your name"/>
+        		<button class="button-name">Send name</button>
+        	</p>
+        	<p><span class="span-msg"></span></p>
+        </div>
+        <div>
+        	<h2>Upload file</h2>
+        	<form id="fileForm">
+        		<p>Choose file to upload: <input type="file" class="file" name="file"/></p>
+        	</form>
+	        <button class="button-upload">Upload file</button>
+        </div>
+        
+        <script>
+        	/**
+        	 * Defines addClickGet with a 'success' function.
+        	 */
+	        var addClickGet = function(){
+	        	
+	        	var currentNumber = $('.span-get').text();
+	        	
+	        	var success = function(data){
+	        		$('.span-get').text(data);
+	        	}
+	        	
+	        	$.ajax({
+	        		type: "GET",
+	        		url: "rest/addClick",
+	        		data: {currentNumber: currentNumber},
+	        		dataType: "json",
+	        		success: success
+	        	}).fail(function(err){
+	        		alert("error: " + err.statusText + "\n" + err.responseText);
+	       		});
+	        	
+	        };
+
+        	/**
+        	 * Defines addClickPost with a 'then' function.
+        	 */
+			var addClickPost = function(){
+	        	
+	        	var currentNumber = $('.span-post').text();
+	        	
+	        	$.ajax({
+	        		type: "POST",
+	        		url: "rest/addClick",
+	        		data: {currentNumber: currentNumber},
+	        		dataType: "json"
+	        	}).fail(function(err){
+	        		alert("error: " + err.statusText + "\n" + err.responseText);
+	        	}).then(function(data) {
+	      			$('.span-post').text(data);
+	       		});
+	        	
+	        };
+	        
+	        /**
+	         * Loading a greeting message from server.
+	         */
+	        var writeHelloMsg = function() {
+	        	
+	        	var name = $('#name').val() || "unknowed";
+	        	
+	        	$.post(
+	        		"rest/" + name,
+	        		{name: name},
+	        		function(data) {
+		        		$('.span-msg').text(data);
+		        	}
+	        	).fail(function(err){
+	        		alert("error: " + err.statusText + "\n" + err.responseText);
+	        	});
+	        };
+	        
+	        /**
+	         * Upload a file to the server.
+	         */
+	        var uploadFile = function() {
+	        	
+				var data = new FormData(document.getElementById("fileForm"));
+	        	
+	        	$.ajax({
+	        		url: "rest/upload",
+	        		data: data,
+	        		cache: false,
+	        		contentType: false,
+	        		processData: false,
+	        		type: 'POST',
+	        		success: function(data) { alert("The file was uploaded successfully."); }
+	        	}).fail(function(err){
+	        		alert("error: " + err.statusText + "\n" + err.responseText);
+	       		});
+	        	
+	        };
+        
+	        // Setting the handlers
+	        $('.button-get').click(addClickGet);
+	        $('.button-post').click(addClickPost);
+	        $('.button-name').click(writeHelloMsg);
+	        $('.button-upload').click(uploadFile);
+	
+			$(document).ready(function() {
+			    $.ajax({
+			        url: "rest/"
+			    })
+			    .then(function(serverInfo) {
+			    	// Information from server in JSON stringify format
+			    	var data = JSON.parse(serverInfo);
+			    	
+			    	// Set information in HTML components
+			    	$('.span-get').text(data.getInitialValue);
+			       	$('.span-post').text(data.postInitialValue);
+			    });
+			});
+        </script>
+        
+	</body>
+</html>
